@@ -1,52 +1,97 @@
-"use client";
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
-import PostCard from "@/components/PostCard";
-import Link from "next/link";
+'use client';
 
-type Post = { id: string; content: string; media_url: string | null; is_locked: boolean; price: number | null; author_username: string; created_at: string; };
+import { useState } from 'react';
 
 export default function FeedPage() {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [userId, setUserId] = useState<string | null>(null);
-  const [newPost, setNewPost] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [postText, setPostText] = useState('');
+  const [posts, setPosts] = useState([
+    {
+      id: 1,
+      author: 'JuanKreator',
+      content: '¡Nuevo contenido exclusivo disponible para suscriptores!',
+      isLocked: false,
+      likes: 12,
+    },
+    {
+      id: 2,
+      author: 'JuanKreator',
+      content: 'Contenido VIP bloqueado. Suscríbete para desbloquear.',
+      isLocked: true,
+      likes: 45,
+    },
+  ]);
 
-  useEffect(() => {
-    async function load() {
-      const { data: userData } = await supabase.auth.getUser();
-      setUserId(userData.user?.id ?? null);
-      const { data } = await supabase.from("posts").select("id, content, media_url, is_locked, price, created_at, profiles(username)").order("created_at", { ascending: false }).limit(50);
-      const mapped = (data ?? []).map((p: any) => ({ id: p.id, content: p.content, media_url: p.media_url, is_locked: p.is_locked, price: p.price, created_at: p.created_at, author_username: p.profiles?.username ?? "usuario" }));
-      setPosts(mapped);
-      setLoading(false);
-    }
-    load();
-  }, []);
+  const handleCreatePost = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!postText.trim()) return;
 
-  async function publish() {
-    if (!userId || !newPost.trim()) return;
-    const { error } = await supabase.from("posts").insert({ author_id: userId, content: newPost.trim(), is_locked: false });
-    if (!error) { setNewPost(""); location.reload(); }
-  }
+    setPosts([
+      {
+        id: Date.now(),
+        author: 'JuanKreator',
+        content: postText,
+        isLocked: false,
+        likes: 0,
+      },
+      ...posts,
+    ]);
+    setPostText('');
+  };
 
   return (
-    <main className="min-h-screen bg-[#0f0a1a] pb-10">
-      <header className="bg-kf-gradient px-4 py-4 flex justify-between items-center sticky top-0 z-20">
-        <h1 className="text-white font-extrabold text-xl">KREATOFANS</h1>
-        <Link href="/perfil" className="text-white text-sm bg-black/30 px-3 py-1.5 rounded-full">Mi perfil</Link>
-      </header>
-      <div className="max-w-xl mx-auto px-4 pt-4">
-        {userId && (
-          <div className="kf-card p-3 mb-4">
-            <textarea value={newPost} onChange={(e) => setNewPost(e.target.value)} placeholder="¿Qué quieres compartir con tus fans?" className="w-full bg-white/10 text-white placeholder-white/50 rounded-lg p-3 outline-none resize-none" rows={3} />
-            <button onClick={publish} className="kf-btn mt-2">Publicar</button>
+    <div className="min-h-screen bg-black text-white p-4 max-w-2xl mx-auto pb-20">
+      <h1 className="text-2xl font-bold mb-6 text-yellow-500">Feed de Contenido</h1>
+
+      {/* Creador de Publicaciones */}
+      <form onSubmit={handleCreatePost} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 mb-6 shadow-md">
+        <textarea
+          rows={3}
+          placeholder="¿Qué quieres compartir con tus fans hoy?"
+          value={postText}
+          onChange={(e) => setPostText(e.target.value)}
+          className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-3 text-white focus:outline-none focus:border-yellow-500"
+        />
+        <div className="flex justify-end mt-3">
+          <button
+            type="submit"
+            className="px-5 py-2 bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-bold rounded-lg hover:brightness-110 transition"
+          >
+            Publicar
+          </button>
+        </div>
+      </form>
+
+      {/* Lista de Publicaciones */}
+      <div className="space-y-4">
+        {posts.map((post) => (
+          <div key={post.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-full bg-yellow-500/20 text-yellow-500 font-bold flex items-center justify-center">
+                {post.author[0]}
+              </div>
+              <div>
+                <p className="font-bold text-sm">{post.author}</p>
+                <p className="text-xs text-zinc-500">Hace un momento</p>
+              </div>
+            </div>
+
+            {post.isLocked ? (
+              <div className="bg-zinc-800/80 border border-zinc-700 rounded-lg p-6 text-center">
+                <p className="text-zinc-400 mb-3">{post.content}</p>
+                <button className="px-4 py-2 bg-yellow-500 text-black font-bold rounded-lg text-sm">
+                  Suscribirse para ver
+                </button>
+              </div>
+            ) : (
+              <p className="text-zinc-200 text-sm mb-3">{post.content}</p>
+            )}
+
+            <div className="flex items-center gap-2 text-xs text-zinc-400 mt-2">
+              <span>❤️ {post.likes} Me gusta</span>
+            </div>
           </div>
-        )}
-        {loading && <p className="text-white/60 text-center">Cargando muro...</p>}
-        {!loading && posts.length === 0 && <p className="text-white/60 text-center">Aún no hay publicaciones. ¡Sé el primero!</p>}
-        {posts.map((post) => (<PostCard key={post.id} post={post} userId={userId} />))}
+        ))}
       </div>
-    </main>
+    </div>
   );
 }
