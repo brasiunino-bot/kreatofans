@@ -8,23 +8,35 @@ export default function FeedPage() {
     {
       id: 1,
       author: '@sofi_kreator',
+      badge: '👑 Famoso (Ganador del Mes)',
       content: '¡Nuevo set fotográfico disponible para suscriptores VIP! 🔥',
       isLocked: false,
-      likes: 42,
+      likes: 142,
+      comments: ['¡Increíble fotos!', '¡El mejor contenido!'],
     },
     {
       id: 2,
       author: '@carlos_fit',
-      content: 'Rutina exclusiva de piernas + plan alimenticio de esta semana 🏋️‍♂️',
+      badge: '🔥 Popular',
+      content: 'Rutina exclusiva de piernas de esta semana 🏋️‍♂️',
       isLocked: true,
-      likes: 128,
+      likes: 88,
+      comments: ['¿A qué hora subes la dieta?'],
     },
   ]);
 
-  const toggleLike = (id: number) => {
+  const [newComment, setNewComment] = useState<{ [key: number]: string }>({});
+
+  const handleAddComment = (postId: number) => {
+    const text = newComment[postId];
+    if (!text?.trim()) return;
+
     setPosts(
-      posts.map((p) => (p.id === id ? { ...p, likes: p.likes + 1 } : p))
+      posts.map((p) =>
+        p.id === postId ? { ...p, comments: [...p.comments, text] } : p
+      )
     );
+    setNewComment({ ...newComment, [postId]: '' });
   };
 
   return (
@@ -33,27 +45,54 @@ export default function FeedPage() {
 
       <FloatingSticker stickerUrl="🚀⭐" mode="flying" targetProfile="@creador_top" />
 
-      <div className="space-y-4">
+      <div className="space-y-6">
         {posts.map((post) => (
           <div key={post.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-            <p className="font-bold text-sm text-yellow-500 mb-2">{post.author}</p>
+            <div className="flex justify-between items-center mb-2">
+              <p className="font-bold text-sm text-yellow-500">{post.author}</p>
+              <span className="text-[10px] px-2 py-0.5 bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 rounded-full">
+                {post.badge}
+              </span>
+            </div>
+
             {post.isLocked ? (
               <div className="bg-zinc-800/80 border border-dashed border-yellow-500/50 rounded-lg p-6 text-center">
                 <p className="text-sm font-semibold text-yellow-400 mb-2">🔒 Contenido Exclusivo VIP</p>
                 <button className="px-4 py-2 bg-yellow-500 text-black font-bold rounded-lg text-xs hover:brightness-110">
-                  Desbloquear con Suscripción
+                  Unirse al Club para Desbloquear
                 </button>
               </div>
             ) : (
               <p className="text-sm text-zinc-200 mb-3">{post.content}</p>
             )}
-            <div className="flex justify-between items-center mt-3 pt-3 border-t border-zinc-800 text-xs text-zinc-400">
-              <button
-                onClick={() => toggleLike(post.id)}
-                className="flex items-center gap-1 hover:text-yellow-500"
-              >
-                ❤️ {post.likes} Me gusta
-              </button>
+
+            {/* Comentarios */}
+            <div className="mt-4 pt-3 border-t border-zinc-800">
+              <p className="text-xs font-bold text-zinc-400 mb-2">Comentarios ({post.comments.length})</p>
+              <div className="space-y-1 mb-3">
+                {post.comments.map((c, i) => (
+                  <p key={i} className="text-xs bg-zinc-800/50 p-2 rounded text-zinc-300">
+                    {c}
+                  </p>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Escribe un comentario..."
+                  value={newComment[post.id] || ''}
+                  onChange={(e) =>
+                    setNewComment({ ...newComment, [post.id]: e.target.value })
+                  }
+                  className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1 text-xs text-white focus:outline-none"
+                />
+                <button
+                  onClick={() => handleAddComment(post.id)}
+                  className="px-3 py-1 bg-yellow-500 text-black font-bold text-xs rounded-lg"
+                >
+                  Enviar
+                </button>
+              </div>
             </div>
           </div>
         ))}

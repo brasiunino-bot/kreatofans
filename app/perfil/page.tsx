@@ -4,8 +4,8 @@ import { useState } from 'react';
 import FloatingSticker from '@/components/FloatingSticker';
 
 export default function ProfilePage() {
-  const [bio, setBio] = useState('Creador de contenido exclusivo 🔥 | Fotos y videos cada semana');
-  const [price, setPrice] = useState('9.99');
+  const [level] = useState('🔥 Popular (Próximo nivel: Famoso)');
+  const [isWinner] = useState(true);
 
   return (
     <div className="min-h-screen bg-black text-white p-4 max-w-2xl mx-auto pb-20">
@@ -16,35 +16,24 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      <div className="mt-12 mb-6">
-        <h1 className="text-xl font-bold">@tu_usuario</h1>
-        <p className="text-xs text-zinc-400 mt-1">Suscripción activa • USD ${price}/mes</p>
+      <div className="mt-12 mb-4">
+        <div className="flex items-center gap-2">
+          <h1 className="text-xl font-bold">@tu_usuario</h1>
+          {isWinner && (
+            <span className="bg-yellow-500 text-black font-extrabold text-[10px] px-2 py-0.5 rounded-full">
+              🏆 GANADOR DEL MES
+            </span>
+          )}
+        </div>
+        <p className="text-xs text-yellow-400 font-semibold mt-1">Nivel: {level}</p>
       </div>
+
+      <button className="w-full py-3 bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-bold rounded-xl mb-4 text-sm">
+        ⭐ Unirse a mi Club VIP ($9.99/mes)
+      </button>
 
       <FloatingSticker stickerUrl="☁️✨" mode="flying" targetProfile="@muro_popular" />
       <FloatingSticker stickerUrl="🚶‍♂️🔥" mode="walking" targetProfile="@amigo_vip" />
-
-      <div className="space-y-4 bg-zinc-900 border border-zinc-800 p-4 rounded-xl mt-4">
-        <h2 className="text-sm font-bold text-yellow-500">Configuración de Perfil</h2>
-        <div>
-          <label className="text-xs text-zinc-400 block mb-1">Biografía</label>
-          <textarea
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white"
-            rows={3}
-          />
-        </div>
-        <div>
-          <label className="text-xs text-zinc-400 block mb-1">Precio de Suscripción (USD)</label>
-          <input
-            type="text"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            className="w-full bg-zinc-800 border border-zinc-700 rounded-lg p-2 text-xs text-white"
-          />
-        </div>
-      </div>
     </div>
   );
 }
